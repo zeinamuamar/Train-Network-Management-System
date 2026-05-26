@@ -1,0 +1,13 @@
+# Java and editor ignores
+*.class
+*.jar
+*.war
+target/
+out/
+build/
+.idea/
+.vscode/
+.classpath
+.project
+.settings/
+.DS_Store
