@@ -6,7 +6,7 @@ public class Path {
 
     public Path(Station destination, double distance) {
         setDestination(destination);
-        setWeight(distance);
+        setdistance(distance);
     }
 
     public Station getDestination() {
@@ -20,16 +20,20 @@ public class Path {
         this.destination = destination;
     }
 
-    public double getWeight() {
+    public double getdistance() {
         return distance;
     }
 
-    public void setWeight(double weight) {
+    public void setdistance(double distance) {
         
-        if (weight <= 0) {
-            throw new IllegalArgumentException("The distance (weight) must be a strictly
-            positive value and greater than zero");
+        if (distance <= 0) {
+            throw new IllegalArgumentException("The distance must be a strictly positive value and greater than zero");
         }
-        this.distance = weight;
+        this.distance = distance;
+    }
+
+    @Override
+    public String toString() {
+        return destination.getName() + " (" + distance + " km)";
     }
 }
