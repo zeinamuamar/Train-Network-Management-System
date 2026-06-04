@@ -1,5 +1,3 @@
-package Backend;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -9,11 +7,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 public class TrainPath {
    private Map<Station, List<Path>> Network;
 
-   
+    //======= 1 =======
     public TrainPath() {
         this.Network = new HashMap<>();
     }
@@ -54,7 +53,7 @@ public class TrainPath {
         }
         return null; 
     }
-
+    //======= 2.1 =======
     public void exportNetwork(String filePath) {
         try (FileWriter fileWriter = new FileWriter(filePath);
              PrintWriter printWriter = new PrintWriter(fileWriter)) {
@@ -84,7 +83,7 @@ public class TrainPath {
             System.err.println("Error" + e.getMessage());
         }
     }
-
+    //======= 2.2 =======
     public void importNetwork(String filePath) {
         //Cleaning the current network to receive new data from the file
         this.Network.clear();
@@ -152,4 +151,138 @@ public class TrainPath {
         return Network;
 
     }
+
+    //======= 3 =======
+    public void renderNetworkToFile(String inputPath, String outputPath) {
+        importNetwork(inputPath);
+
+        if (Network.isEmpty()) {
+            System.out.println("Warning: The grid is empty, there is nothing to draw");
+            return;
+        }
+
+        try (FileWriter fileWriter = new FileWriter(outputPath);
+             PrintWriter printWriter = new PrintWriter(fileWriter)) {
+
+            printWriter.println("=========================================================");
+            printWriter.println("                    (Graph Render)                       ");
+            printWriter.println("=========================================================");
+            printWriter.println();
+
+            for (Map.Entry<Station, List<Path>> entry : Network.entrySet()) {
+                Station currentStation = entry.getKey();
+                List<Path> paths = entry.getValue();
+
+                printWriter.println(" ┌────────────────────────┐");
+                printWriter.println(" │ Station: " + String.format("%-15s", currentStation.getName()) + "│");
+                printWriter.println(" └────────────────────────┘");
+
+                if (paths.isEmpty()) {
+                        printWriter.println("       └── ⛔ no paths originate from this station");
+                    } else {
+                    // رسم الحواف (Edges) المتفرعة
+                    for (int i = 0; i < paths.size(); i++) {
+                        Path path = paths.get(i);
+                        
+                        // استخدام رموز ASCII لرسم تفرعات الأسهم
+                        if (i == paths.size() - 1) {
+                            // المسار الأخير للمحطة الحالي
+                            printWriter.println("       └─── 🛤️  ──(" + path.getdistance() + " km)──> [ " + path.getDestination().getName() + " ]");
+                        } else {
+                            // المسارات البينية
+                            printWriter.println("       ├─── 🛤️  ──(" + path.getdistance() + " km)──> [ " + path.getDestination().getName() + " ]");
+                        }
+                    }
+                }
+                //A blank line between the stations
+                printWriter.println(); 
+            }
+
+            printWriter.println("=========================================================");
+            printWriter.println("   The structural diagram was generated successfully      ");
+            printWriter.println("=========================================================");
+            
+            System.out.println("The network was read and rendered visually successfully inside the file: " + outputPath);
+
+        } catch (IOException e) {
+            System.err.println("Error while rendering the file: " + e.getMessage());
+        }
+    }
+    //======= 4 =======
+    public void findShortestPath(String sourceName, String destName) {
+        Station source = findStationByName(sourceName);
+        Station destination = findStationByName(destName);
+
+        if (source == null || destination == null) {
+            System.out.println("Error: One of the relay stations does not exist in the network ❌");
+            return;
+        }
+
+        Map<Station, Double> distances = new HashMap<>();
+        Map<Station, Station> parentMap = new HashMap<>();
+        
+        PriorityQueue<StationDistancePair> pq = new PriorityQueue<>(
+            (a, b) -> Double.compare(a.distance, b.distance)
+        );
+
+        for (Station s : Network.keySet()) {
+            distances.put(s, Double.MAX_VALUE);
+        }
+
+        distances.put(source, 0.0);
+        pq.add(new StationDistancePair(source, 0.0));
+
+        while (!pq.isEmpty()) {
+            StationDistancePair currentPair = pq.poll();
+            Station currentStation = currentPair.station;
+
+            if (currentStation.equals(destination)) break;
+
+            if (currentPair.distance > distances.get(currentStation)) continue;
+
+            List<Path> paths = Network.get(currentStation);
+            if (paths != null) {
+                for (Path path : paths) {
+                    Station neighbor = path.getDestination();
+                    double newDist = distances.get(currentStation) + path.getdistance();
+
+                    if (newDist < distances.get(neighbor)) {
+                        distances.put(neighbor, newDist);
+                        parentMap.put(neighbor, currentStation);
+                        pq.add(new StationDistancePair(neighbor, newDist));
+                    }
+                }
+            }
+        }
+
+      
+        if (distances.get(destination) == Double.MAX_VALUE) {
+            System.out.println("There is no path connecting between ❌" + sourceName + " and " + destName);
+        } else {
+            System.out.println("====== Result of calculating the shortest path ======");
+            System.out.println("The shortest total distance: " + distances.get(destination) + "Km");
+            
+            List<String> pathList = new ArrayList<>();
+            Station curr = destination;
+            while (curr != null) {
+                pathList.add(0, curr.getName());
+                curr = parentMap.get(curr);
+            }
+            
+            System.out.print("The shortest path: " + String.join(" ➔ ", pathList));
+            System.out.println("\n==================================");
+        }
+    }
+
+    private static class StationDistancePair {
+        Station station;
+        double distance;
+
+        public StationDistancePair(Station station, double distance) {
+            this.station = station;
+            this.distance = distance;
+        }
+    }
+
+
 }
