@@ -180,16 +180,15 @@ public class TrainPath {
                 if (paths.isEmpty()) {
                         printWriter.println("       └── ⛔ no paths originate from this station");
                     } else {
-                    // رسم الحواف (Edges) المتفرعة
+                   
                     for (int i = 0; i < paths.size(); i++) {
                         Path path = paths.get(i);
                         
-                        // استخدام رموز ASCII لرسم تفرعات الأسهم
                         if (i == paths.size() - 1) {
-                            // المسار الأخير للمحطة الحالي
+                           
                             printWriter.println("       └─── 🛤️  ──(" + path.getdistance() + " km)──> [ " + path.getDestination().getName() + " ]");
                         } else {
-                            // المسارات البينية
+                            
                             printWriter.println("       ├─── 🛤️  ──(" + path.getdistance() + " km)──> [ " + path.getDestination().getName() + " ]");
                         }
                     }
