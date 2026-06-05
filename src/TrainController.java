@@ -2,28 +2,41 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class TrainController {
-    // نأخذ نسخة واحدة من كلاس الـ Backend الإداري الكبير
+    //This class acts as a mediator between the UI and the backend logic,
+    //allowing for better separation of concerns and easier maintenance.
     private TrainPath backendGraph;
 
-    // مشد الكلاس يقوم بتهيئة الغراف
+    //===============================================
+    // 1. Constructor to initialize the backend graph
     public TrainController() {
         this.backendGraph = new TrainPath();
     }
 
-    // 1. وسيط لإضافة محطة جديدة من الواجهات
+    //to add a station from the UI, we validate the input and then call the backend method
     public boolean addStationFromUI(String name, String code) {
-        // نتحقق من أن المدخلات ليست فارغة قبل إرسالها للـ Backend
+        //to ensure data integrity, we check that the station name and code are not null or empty before adding
         if (name == null || name.trim().isEmpty() || code == null || code.trim().isEmpty()) {
             return false; 
+        }
+        //we also check if a station with the same name already 
+        //exists in the backend graph to prevent duplicates
+        if (backendGraph.findStationByName(name) != null) {
+            // station with the same name already exists, we do not add it again
+            return false;
         }
         backendGraph.addStation(name, code);
         return true;
     }
 
-    // 2. وسيط لإضافة مسار بين محطتين
+    //===============================================
+    // 2. To add a path from the UI, we validate the input and then call the backend method
     public boolean addPathFromUI(String sourceName, String destName, double distance) {
-        if (distance <= 0) return false; // أمان البيانات لمنع المسافات السالبة
-        
+        //to ensure data integrity, we check that the station names are not null or empty
+        //and that the distance is a positive value before adding
+        if (sourceName == null || sourceName.trim().isEmpty() || destName == null || destName.trim().isEmpty() || distance <= 0) {
+            return false;
+        }
+
         Station source = backendGraph.findStationByName(sourceName);
         Station dest = backendGraph.findStationByName(destName);
         
@@ -31,24 +44,26 @@ public class TrainController {
             backendGraph.addPath(sourceName, destName, distance);
             return true;
         }
-        return false; // أحد المحطات غير موجود
+        return false; 
     }
 
-    // 3. تحويل مخرجات أقصر طريق (Dijkstra) إلى نص منسق لعرضه في نافذة (JOptionPane)
+    //===============================================
+    // 3. A method to get the shortest path between two stations, which will be
+    // called by the UI when the user requests it
     public String getShortestPathRoute(String from, String to) {
     if (from == null || to == null || from.trim().isEmpty() || to.trim().isEmpty()) {
         return "الرجاء تحديد محطة البداية والنهاية بشكل صحيح!";
     }
     
-    // استدعاء الدالة المعدلة من الـ Backend بنجاح
+    //get the shortest path from the backend graph
     List<Station> path = backendGraph.findShortestPath(from, to);
     
     if (path == null || path.isEmpty()) {
-        return "لا يوجد مسار يربط بين المحطتين المكتوبتين أو أن إحداهما غير موجودة.";
+        return "There is no path connecting between ❌" + from + " and " + to;
     }
     
-    // بناء النص المنسق بشكل احترافي لعرضه بالواجهات
-    StringBuilder result = new StringBuilder("المسار الأقصر المكتشف هو:\n\n");
+    //format the path into a user-friendly string to display in the UI
+    StringBuilder result = new StringBuilder("Shortest path:\n\n");
     for (int i = 0; i < path.size(); i++) {
         result.append(path.get(i).getName());
         if (i < path.size() - 1) {
@@ -58,37 +73,72 @@ public class TrainController {
     return result.toString();
 }
 
-    // 4. وسيط لفحص الدورات المغلقة وإعطاء نتيجة نصية واضحة للواجهة
+    //===============================================
+    // 4. A method to check for cycles in the network, which will be called
+    // by the UI when the user clicks the "Check Network" button
     public String checkNetworkCycles() {
-        // استدعاء دالة كشف الدورات DFS من الـ Backend
+        //we call the backend method to check for cycles and then return 
+        // a user-friendly message based on the result
         boolean hasCycle = backendGraph.hasCycle(); 
         
         if (hasCycle) {
-            return "⚠️ تنبيه: تم كشف وجود دورة مغلقة في شبكة القطارات الحالية!";
+            return "⚠️ Network contains at least one cycle!";
         } else {
-            return "✅ الشبكة سليمة تماماً ولا تحتوي على أي دورات مغلقة.";
+            return "✅ Network is acyclic, no cycles detected";
         }
     }
 
-    // 5. جلب أسماء المحطات فقط لتغذية القوائم المنسدلة (JComboBox) في الـ UI
+    //===============================================
+    // 5. A method to get the station names for populating the combo boxes in the UI,
+    // which will be called when the UI initializes
     public String[] getStationNamesForComboBox() {
-        // نأخذ المحطات الحقيقية من الغراف
+        // we retrieve the list of stations from the backend graph and
+        // extract their names into an array to return to the UI
         List<Station> stations = new ArrayList<>(backendGraph.getNetwork().keySet());
         String[] names = new String[stations.size()];
         
         for (int i = 0; i < stations.size(); i++) {
-            names[i] = stations.get(i).getName(); // نأخذ الاسم النصي فقط
+            names[i] = stations.get(i).getName(); 
         }
         return names;
     }
-    
-    // 6. وسيط لاستيراد الملف النصي وإعادة تقرير للواجهة
+
+    //===============================================
+    // 6. A method to import the train network data from a file,
+    // which will be called by the UI when the user clicks the "Import Network" button
     public String importNetworkFromFile(String filePath) {
         try {
             backendGraph.importNetwork(filePath);
-            return "✅ تم استيراد شبكة القطارات بنجاح من الملف!";
+            return "✅ Network imported successfully from " + filePath;
         } catch (Exception e) {
-            return "❌ فشل الاستيراد: خطأ في قراءة أو تحليل بيانات الملف. " + e.getMessage();
+            return "❌ Failed to import network: Error reading or parsing file data. " + e.getMessage();
+        }
+    }
+
+    // ===============================================
+    // 7. A method to get the stations sorted by connections for the UI
+    public List<String> getStationsSortedByConnectionsForUI() {
+        // we call the backend method to get the stations sorted by their number of connections,
+        // and then format the result into a list of strings to display in the UI
+        List<Station> sortedStations = backendGraph.getStationsSortedByConnections();
+        List<String> formattedList = new ArrayList<>();
+        
+        for (Station s : sortedStations) {
+            // we also include the number of connections for each station in the formatted string
+            int connectionsCount = (backendGraph.getNetwork().get(s) != null) ? backendGraph.getNetwork().get(s).size() : 0;
+            formattedList.add(s.getName() + " (" + s.getCode() + ") - Paths count: " + connectionsCount);
+        }
+        return formattedList;
+    }
+    
+    // ===============================================
+    // 8. A method to export the train network data to a file
+    public String exportNetworkToFile(String filePath) {
+        try {
+            backendGraph.exportNetwork(filePath); 
+            return "✅ Network exported successfully to " + filePath;
+        } catch (Exception e) {
+            return "❌ Failed to export network: " + e.getMessage();
         }
     }
 }
