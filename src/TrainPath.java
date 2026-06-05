@@ -4,6 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,10 +55,10 @@ public class TrainPath {
         }
         return null; 
     }
+
     //======= 2.1 =======
     public void exportNetwork(String filePath) {
-        try (FileWriter fileWriter = new FileWriter(filePath);
-             PrintWriter printWriter = new PrintWriter(fileWriter)) {
+        try (PrintWriter printWriter = new PrintWriter(filePath)) {
 
             for (Map.Entry<Station, List<Path>> entry : Network.entrySet()) {
                 Station currentStation = entry.getKey();
@@ -77,22 +79,22 @@ public class TrainPath {
                 //New line for the new station
                 printWriter.println(); 
             }
-            System.out.println("Exported successfully" + filePath);
 
         } catch (IOException e) {
-            System.err.println("Error" + e.getMessage());
+            System.err.println("Error while exporting the network: " + e.getMessage());
         }
     }
+
     //======= 2.2 =======
     public void importNetwork(String filePath) {
         //Cleaning the current network to receive new data from the file
         this.Network.clear();
 
-        try (FileReader fileReader = new FileReader(filePath);
-             BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
 
             String line;
             List<String> linesWithPaths = new ArrayList<>();
+            
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
                 linesWithPaths.add(line);
@@ -143,7 +145,7 @@ public class TrainPath {
             System.out.println("Network imported successfully from: " + filePath);
 
         } catch (IOException e) {
-            System.err.println("Error while reading the file: " + e.getMessage());
+            throw new IllegalArgumentException("Error while reading the file: " + e.getMessage());
         }
     }
 
@@ -157,8 +159,7 @@ public class TrainPath {
         importNetwork(inputPath);
 
         if (Network.isEmpty()) {
-            System.out.println("Warning: The grid is empty, there is nothing to draw");
-            return;
+           throw new IllegalArgumentException("Warning: The grid is empty, there is nothing to draw");
         }
 
         try (FileWriter fileWriter = new FileWriter(outputPath);
@@ -180,15 +181,15 @@ public class TrainPath {
                 if (paths.isEmpty()) {
                         printWriter.println("       └── ⛔ no paths originate from this station");
                     } else {
-                   
+                    
                     for (int i = 0; i < paths.size(); i++) {
                         Path path = paths.get(i);
                         
                         if (i == paths.size() - 1) {
-                           
+                            
                             printWriter.println("       └─── 🛤️  ──(" + path.getdistance() + " km)──> [ " + path.getDestination().getName() + " ]");
                         } else {
-                            
+                           
                             printWriter.println("       ├─── 🛤️  ──(" + path.getdistance() + " km)──> [ " + path.getDestination().getName() + " ]");
                         }
                     }
@@ -201,20 +202,18 @@ public class TrainPath {
             printWriter.println("   The structural diagram was generated successfully      ");
             printWriter.println("=========================================================");
             
-            System.out.println("The network was read and rendered visually successfully inside the file: " + outputPath);
-
         } catch (IOException e) {
-            System.err.println("Error while rendering the file: " + e.getMessage());
-        }
+            System.err.println("Error while writing the rendered network to file: " + e.getMessage());
+        }   
     }
+
     //======= 4 =======
-    public void findShortestPath(String sourceName, String destName) {
+    public List<Station> findShortestPath(String sourceName, String destName) {
         Station source = findStationByName(sourceName);
         Station destination = findStationByName(destName);
 
         if (source == null || destination == null) {
-            System.out.println("Error: One of the relay stations does not exist in the network ❌");
-            return;
+            return null;
         }
 
         Map<Station, Double> distances = new HashMap<>();
@@ -235,9 +234,11 @@ public class TrainPath {
             StationDistancePair currentPair = pq.poll();
             Station currentStation = currentPair.station;
 
-            if (currentStation.equals(destination)) break;
+            if (currentStation.equals(destination)) 
+                break;
 
-            if (currentPair.distance > distances.get(currentStation)) continue;
+            if (currentPair.distance > distances.get(currentStation))
+                continue;
 
             List<Path> paths = Network.get(currentStation);
             if (paths != null) {
@@ -256,20 +257,17 @@ public class TrainPath {
 
       
         if (distances.get(destination) == Double.MAX_VALUE) {
-            System.out.println("There is no path connecting between ❌" + sourceName + " and " + destName);
-        } else {
-            System.out.println("====== Result of calculating the shortest path ======");
-            System.out.println("The shortest total distance: " + distances.get(destination) + "Km");
-            
-            List<String> pathList = new ArrayList<>();
+            return null;
+            }
+         else {
+            List<Station> pathList = new ArrayList<>();
             Station curr = destination;
+
             while (curr != null) {
-                pathList.add(0, curr.getName());
+                pathList.add(0, curr);
                 curr = parentMap.get(curr);
             }
-            
-            System.out.print("The shortest path: " + String.join(" ➔ ", pathList));
-            System.out.println("\n==================================");
+            return pathList;
         }
     }
 
@@ -283,5 +281,77 @@ public class TrainPath {
         }
     }
 
+    //======= 5 =======
+    public boolean hasCycle() {
+        //We have three cases: (0) not visited, (1) visiting, (2) visited
+        Map<Station, Integer> visitingState = new HashMap<>();
+        //Made all station 0
+        for (Station station : Network.keySet()) { 
+            visitingState.put(station, 0);
+        }
+
+        for (Station station : Network.keySet()) { 
+            if (visitingState.get(station) == 0) {
+                if (dfsCheckCycle(station, visitingState)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    //A helper method to perform DFS and check for cycles
+    private boolean dfsCheckCycle(Station currentStation, Map<Station, Integer> visitingState) {
+        //Now we put te value of this station as (1) because we are visiting it
+        visitingState.put(currentStation, 1);
+        //Get the list of paths goes from this station
+        List<Path> paths = Network.get(currentStation);
+        
+        if (paths != null) {
+            for (Path path : paths) {
+                Station neighbor = path.getDestination();
+                //If the neighbor is currently being visited, it means we have a cycle
+                if (visitingState.get(neighbor) == 1) {
+                    return true;
+                }
+                //If the neighbor is not visited, we continue the DFS
+                if (visitingState.get(neighbor) == 0) {
+                    if (dfsCheckCycle(neighbor, visitingState)) {
+                        return true;
+                    }
+                }
+                
+            }
+        }
+        //After we finish visiting all neighbors, we mark this station as fully visited (2)
+        visitingState.put(currentStation, 2);
+        return false;
+    }
+
+    //======= 6 =======
+    public List<Station> getStationsSortedByConnections() {
+        //First, we create a list of stations from the keys of the network map
+        List<Station> sortedStations = new ArrayList<>(Network.keySet());
+
+        //Then, we sort this list based on the number of connections (paths) each station has
+        Collections.sort(sortedStations, new Comparator<Station>() {
+            @Override
+            public int compare(Station s1, Station s2) {
+                //get the number of connections for station 1 (size of its paths list)
+                int connectionsCount1 = (Network.get(s1) != null) ? Network.get(s1).size() : 0;
+                
+                //get the number of connections for station 2 (size of its paths list)
+                int connectionsCount2 = (Network.get(s2) != null) ? Network.get(s2).size() : 0;
+                //We want to sort in descending)(تنازلي) order, so we compare station 2 with station 1
+                return Integer.compare(connectionsCount2, connectionsCount1);
+                
+                //if we wanted ascending(تصاعدي) order: Integer.compare(connectionsCount1, connectionsCount2)
+            }
+        });
+
+        //return the sorted list of stations
+        return sortedStations;
+    }
 
 }
