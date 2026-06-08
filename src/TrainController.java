@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 
 public class TrainController {
@@ -87,7 +88,9 @@ public class TrainController {
             return "✅ Network is acyclic, no cycles detected";
         }
     }
-
+     public Map<Station, List<Path>> getNetwork() {
+    return backendGraph.getNetwork();
+     }
     //===============================================
     // 5. A method to get the station names for populating the combo boxes in the UI,
     // which will be called when the UI initializes

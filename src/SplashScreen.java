@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 public class SplashScreen extends JFrame {
     public SplashScreen() {
@@ -7,7 +8,7 @@ public class SplashScreen extends JFrame {
         setSize(1000, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
+     
         add(new SplashPanel());
         setVisible(true);
     }
@@ -28,11 +29,9 @@ public class SplashScreen extends JFrame {
         private int currentIndex = 0;
         
         public SplashPanel() {
-            ImageIcon icon = new ImageIcon("Assect/train_background.jpeg");
-            if (icon.getIconWidth() < 0) {
-                System.out.println("Image not found!");
-            } else {
-                background = icon.getImage();
+            background = loadImage("Assect/train_background.jpeg");
+            if (background == null) {
+                System.out.println("Splash background not found.");
             }
 
             javax.swing.Timer typingTimer = new javax.swing.Timer(120, e -> {
@@ -93,6 +92,27 @@ public class SplashScreen extends JFrame {
                         }
         });
                 LoadingTimer.start();
+        }
+
+        private Image loadImage(String relativePath) {
+            String[] candidates = {
+                relativePath,
+                "src/" + relativePath,
+                "../" + relativePath,
+                "../Train-Network-Management-System/" + relativePath,
+                "Train-Network-Management-System/" + relativePath
+            };
+            for (String candidate : candidates) {
+                File file = new File(candidate);
+                if (file.exists()) {
+                    ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+                    if (icon.getIconWidth() >= 0) {
+                        System.out.println("Loaded splash image from: " + file.getAbsolutePath());
+                        return icon.getImage();
+                    }
+                }
+            }
+            return null;
         }
 }
 }
