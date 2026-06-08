@@ -1,5 +1,3 @@
-package Backend;
-
 public class Path {
     private Station destination;  
     private double distance;  

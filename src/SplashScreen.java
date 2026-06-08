@@ -26,7 +26,7 @@ public class SplashScreen extends JFrame {
         private String fullSubtitle = "MANAGEMENT SYSTEM";
         private String currentSubtitle = "";
         private int currentIndex = 0;
-
+        
         public SplashPanel() {
             ImageIcon icon = new ImageIcon("Assect/train_background.jpeg");
             if (icon.getIconWidth() < 0) {
@@ -89,7 +89,7 @@ public class SplashScreen extends JFrame {
                         ((javax.swing.Timer)e.getSource()).stop();
                         //open next window
                         SwingUtilities.getWindowAncestor(this).dispose();
-                        new NextWindow(); // we will create this next
+                        new MainDashboard(); // we will create this next
                         }
         });
                 LoadingTimer.start();
