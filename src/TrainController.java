@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class TrainController {
     //This class acts as a mediator between the UI and the backend logic,
     //allowing for better separation of concerns and easier maintenance.
-    private TrainPath backendGraph;
+    TrainPath backendGraph;
 
     //===============================================
     // 1. Constructor to initialize the backend graph
@@ -28,7 +28,21 @@ public class TrainController {
         backendGraph.addStation(name, code);
         return true;
     }
+public boolean addStationFromUI(String name, String code, int x, int y) {
 
+    if (name == null || name.trim().isEmpty()
+            || code == null || code.trim().isEmpty()) {
+        return false;
+    }
+
+    if (backendGraph.findStationByName(name) != null) {
+        return false;
+    }
+
+    backendGraph.addStation(name, code, x, y);
+
+    return true;
+}
     //===============================================
     // 2. To add a path from the UI, we validate the input and then call the backend method
     public boolean addPathFromUI(String sourceName, String destName, double distance) {
@@ -43,6 +57,7 @@ public class TrainController {
         
         if (source != null && dest != null) {
             backendGraph.addPath(sourceName, destName, distance);
+          //  backendGraph.addPath(destName, sourceName, distance);
             return true;
         }
         return false; 
@@ -73,8 +88,11 @@ public class TrainController {
     }
     return result.toString();
 }
-
-    //===============================================
+public List<Station> getShortestPath(String from, String to) {
+    return backendGraph.findShortestPath(from, to);
+}
+    
+//===============================================
     // 4. A method to check for cycles in the network, which will be called
     // by the UI when the user clicks the "Check Network" button
     public String checkNetworkCycles() {
@@ -139,9 +157,9 @@ public class TrainController {
     public String exportNetworkToFile(String filePath) {
         try {
             backendGraph.exportNetwork(filePath); 
-            return "✅ Network exported successfully to " + filePath;
+            return "Network exported successfully to " + filePath;
         } catch (Exception e) {
-            return "❌ Failed to export network: " + e.getMessage();
+            return "Failed to export network: " + e.getMessage();
         }
     }
 }

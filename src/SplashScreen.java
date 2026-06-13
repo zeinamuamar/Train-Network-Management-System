@@ -3,14 +3,19 @@ import java.awt.*;
 import java.io.File;
 
 public class SplashScreen extends JFrame {
+
     public SplashScreen() {
         setTitle("Train Network Management System");
         setSize(1000, 600);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
      
         add(new SplashPanel());
         setVisible(true);
+        setAlwaysOnTop(true);
+        setAlwaysOnTop(false);
+        toFront();
+        requestFocus();
     }
 
     public static void main(String[] args) {
@@ -86,9 +91,14 @@ public class SplashScreen extends JFrame {
                         progressBar.setValue(progress);
                         if(progress>=100){
                         ((javax.swing.Timer)e.getSource()).stop();
+                        System.out.println("Splash finished, opening MainDashboard...");
                         //open next window
-                        SwingUtilities.getWindowAncestor(this).dispose();
-                        new MainDashboard(); // we will create this next
+                        java.awt.Window window = SwingUtilities.getWindowAncestor(this);
+                        if (window != null) {
+                            window.dispose();
+                        }
+                        new MainDashboard();
+                        System.out.println("MainDashboard created.");
                         }
         });
                 LoadingTimer.start();

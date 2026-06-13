@@ -18,13 +18,22 @@ public class TrainPath {
     public TrainPath() {
         this.Network = new HashMap<>();
     }
-
+    // this is for the bbackend
     public void addStation(String name, String code) {
         Station newStation = new Station(name, code);
         //Ensure that the station paths are not deleted if called again by mistake
         Network.putIfAbsent(newStation, new ArrayList<>());
     }
+    //values are assigned when a station is created...x,y can be set later using the setters of the station object
+    public void addStation(String name, String code, int x, int y) {
 
+    Station station = new Station(name, code);
+
+    station.setX(x);
+    station.setY(y);
+
+    this.Network.putIfAbsent(station, new ArrayList<>());
+}
     public void addPath(String sourceName, String destName, double distance) {
         Station source = findStationByName(sourceName);
         Station destination = findStationByName(destName);
