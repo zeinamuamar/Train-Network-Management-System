@@ -78,13 +78,79 @@ public class MainDashboard extends JFrame {
         JButton checkCycles = createButton("Check Cycles", 250);
         JButton importGraph = createButton("Import Graph", 300);
         JButton exportGraph = createButton("Export Graph", 350);
+        JButton sortStations = createButton("Sort Stations", 400);
+     importGraph.addActionListener(e -> {
+
+    JFileChooser chooser = new JFileChooser();
+
+    int result = chooser.showOpenDialog(MainDashboard.this);
+
+    if (result == JFileChooser.APPROVE_OPTION) {
+
+        String path =
+                chooser.getSelectedFile()
+                       .getAbsolutePath();
+
+        String message =
+                controller.importNetworkFromFile(path);
+
+        JOptionPane.showMessageDialog(
+                this,
+                message
+        );
+
+        mapPanel.repaint();
+    }
+});
+        exportGraph.addActionListener(e -> {
+
+    JFileChooser chooser = new JFileChooser();
+
+    int result = chooser.showSaveDialog(this);
+
+    if (result == JFileChooser.APPROVE_OPTION) {
+
+        String path =
+                chooser.getSelectedFile()
+                       .getAbsolutePath();
+
+        String message =
+                controller.exportNetworkToFile(path);
+
+        JOptionPane.showMessageDialog(
+                this,
+                message
+        );
+    }
+});
         checkCycles.addActionListener(e -> {
 
     String result = controller.checkNetworkCycles();
-
+    
     JOptionPane.showMessageDialog(
             this,
             result
+    );
+});
+    sortStations.addActionListener(e -> {
+
+    List<String> stations =
+            controller.getStationsSortedByConnectionsForUI();
+
+    StringBuilder result =
+            new StringBuilder();
+
+    for (String station : stations) {
+
+        result.append(station)
+              .append("\n");
+    }
+
+    JOptionPane.showMessageDialog(
+            this,
+            result.toString(),
+            "Stations Sorted By Connections",
+            JOptionPane.INFORMATION_MESSAGE
     );
 });
         addStation.addActionListener(e -> {
@@ -204,7 +270,8 @@ public class MainDashboard extends JFrame {
             );
         }
     }
-});shortestPath.addActionListener(e -> {
+});
+shortestPath.addActionListener(e -> {
 
     String[] stations =
             controller.getNetwork()
@@ -258,7 +325,7 @@ public class MainDashboard extends JFrame {
         left.add(checkCycles);
         left.add(importGraph);
         left.add(exportGraph);
-
+        left.add(sortStations);
         return left;
     }
 
