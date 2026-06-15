@@ -159,7 +159,7 @@ public class MainDashboard extends JFrame {
             String[] stations = {
                     "Damascus",
                     "Daraa",
-                    "Quneitra",
+                    "Al-raqqa",
                     "As-Suwayda",
                     "Homs",
                     "Hama",
@@ -350,10 +350,10 @@ shortestPath.addActionListener(e -> {
                 return new Point(160, 470);
             case "As-Sua":
                 return new Point(530, 520);
-            case "Hasakah":
-                return new Point(470, 100);
-            case "Deir ezzor":
-                return new Point(420, 245);
+            case "Al-raqqa":
+                return new Point(350, 170);
+            case "Hama":
+                return new Point(230, 260);
             case "Al-Hasakah":
                 return new Point(520, 120);
             case "Aleppo":
@@ -388,7 +388,7 @@ shortestPath.addActionListener(e -> {
                 return "IDL";
             case "Deir Ezzor":
                 return "DEI";
-            case "Raqqa":
+            case "AL-raqqa":
                 return "RAQ";
             case "Hasakah":
                 return "HAS";
@@ -421,7 +421,7 @@ shortestPath.addActionListener(e -> {
         String[] governorates = {
                 "Damascus",
                 "Daraa",
-                "Quneitra",
+                "Al-Raqqa",
                 "As-Suwayda",
                 "Homs",
                 "Hama",
