@@ -162,4 +162,7 @@ public List<Station> getShortestPath(String from, String to) {
             return "Failed to export network: " + e.getMessage();
         }
     }
+    public void clearNetwork() {
+          backendGraph.getNetwork().clear();
+    }
 }

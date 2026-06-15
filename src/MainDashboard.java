@@ -15,7 +15,7 @@ public class MainDashboard extends JFrame {
         setSize(1000, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+        
         //create backend ONCE
         controller = new TrainController();
         //initializeGovernorateStations();
@@ -45,19 +45,51 @@ public class MainDashboard extends JFrame {
         requestFocus();
     }
 
-    private JPanel createMainPanel() {
+   private JPanel createMainPanel() {
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(Color.BLACK);
+    JPanel mainPanel = new JPanel(new BorderLayout());
+    mainPanel.setBackground(Color.BLACK);
 
-        mainPanel.add(createLeftPanel(), BorderLayout.WEST);
+    mainPanel.add(createLeftPanel(), BorderLayout.WEST);
 
-        mapPanel = new MapPanel(controller);
-        mainPanel.add(mapPanel, BorderLayout.CENTER);
+    mapPanel = new MapPanel(controller);
 
-        return mainPanel;
+    JPanel mapContainer = new JPanel(new BorderLayout());
+
+    JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    topPanel.setBackground(new Color(10, 10, 20));
+    JButton refreshButton = new JButton("Refresh");
+    refreshButton.setBackground(new Color(30, 30, 60));
+    refreshButton.setForeground(Color.WHITE);
+    refreshButton.setFocusPainted(false);
+    refreshButton.addActionListener(e -> {
+
+    int choice = JOptionPane.showConfirmDialog(
+            this,
+            "Clear the entire railway network?",
+            "Confirm Refresh",
+            JOptionPane.YES_NO_OPTION
+    );
+
+    if (choice == JOptionPane.YES_OPTION) {
+
+        controller.clearNetwork();
+
+        mapPanel.setShortestPath(new ArrayList<>());
+        mapPanel.setCyclePath(new ArrayList<>());
+
+        mapPanel.repaint();
     }
+});
+    topPanel.add(refreshButton);
 
+    mapContainer.add(topPanel, BorderLayout.NORTH);
+    mapContainer.add(mapPanel, BorderLayout.CENTER);
+
+    mainPanel.add(mapContainer, BorderLayout.CENTER);
+
+    return mainPanel;
+}
     private JPanel createLeftPanel() {
 
         JPanel left = new JPanel();
@@ -157,16 +189,15 @@ public class MainDashboard extends JFrame {
           
             
             String[] stations = {
-                    "Damascus",
-                    "Daraa",
-                    "Al-raqqa",
                     "As-Suwayda",
+                    "Daraa",
+                    "Damascus",
                     "Homs",
                     "Hama",
-                    "Aleppo",
                     "Idlib",
-                    "Latakia",
-                    "Hasakah"
+                    "Aleppo",
+                    "Al-Raqqa",
+                    
             };
 
             String selected = (String) JOptionPane.showInputDialog(
@@ -343,26 +374,26 @@ shortestPath.addActionListener(e -> {
     private Point getProvinceLocation(String province) {
         switch (province) {
             case "Damascus":
-                return new Point(230, 420);
+                return new Point(230, 400);
             case "As-Suwayda":
-                return new Point(210, 500);
+                return new Point(210, 480);
             case "Daraa":
-                return new Point(160, 470);
+                return new Point(160, 450);
             case "As-Sua":
-                return new Point(530, 520);
-            case "Al-raqqa":
-                return new Point(350, 170);
+                return new Point(530, 500);
+            case "Al-Raqqa":
+                return new Point(350, 150);
             case "Hama":
-                return new Point(230, 260);
+                return new Point(230, 240);
             case "Al-Hasakah":
-                return new Point(520, 120);
+                return new Point(520, 100);
             case "Aleppo":
-                return new Point(280, 180);
+                return new Point(280, 160);
             case "Idlib":
-                return new Point(210,210);
+                return new Point(210,190);
            
          case "Homs":
-                return new Point(210, 320);
+                return new Point(210, 300);
             default:
                 return null;
         }
@@ -388,7 +419,7 @@ shortestPath.addActionListener(e -> {
                 return "IDL";
             case "Deir Ezzor":
                 return "DEI";
-            case "AL-raqqa":
+            case "Al-Raqqa":
                 return "RAQ";
             case "Hasakah":
                 return "HAS";
