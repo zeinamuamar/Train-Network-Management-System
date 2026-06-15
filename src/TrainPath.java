@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-
+import java.awt.Point;
 public class TrainPath {
    private Map<Station, List<Path>> Network;
 
@@ -33,6 +33,47 @@ public class TrainPath {
     station.setY(y);
 
     this.Network.putIfAbsent(station, new ArrayList<>());
+}  
+    private Point getProvinceLocation(String province) {
+
+    switch (province) {
+
+        case "Damascus":
+            return new Point(230, 420);
+
+        case "As-Suwayda":
+            return new Point(210, 500);
+
+        case "Daraa":
+            return new Point(160, 470);
+
+        case "Hasakah":
+            return new Point(470, 100);
+
+        case "Aleppo":
+            return new Point(280, 180);
+
+        case "Idlib":
+            return new Point(210, 210);
+
+        case "Homs":
+            return new Point(210, 320);
+
+        case "Hama":
+            return new Point(230, 260);
+
+        case "Latakia":
+            return new Point(140, 250);
+
+        case "Tartous":
+            return new Point(140, 320);
+
+        case "Quneitra":
+            return new Point(170, 420);
+
+        default:
+            return new Point(50, 50);
+    }
 }
     public void addPath(String sourceName, String destName, double distance) {
         Station source = findStationByName(sourceName);
@@ -112,8 +153,19 @@ public class TrainPath {
                 if (parts.length >= 1) {
                     String sourceName = parts[0].trim();
                     //Automatically generate a code from the first 3 letters
-                    String generatedCode = sourceName.substring(0, Math.min(sourceName.length(), 3)).toUpperCase();
-                    addStation(sourceName, generatedCode);
+                   String generatedCode =
+        sourceName.substring(0,
+        Math.min(sourceName.length(), 3))
+        .toUpperCase();
+
+Point p = getProvinceLocation(sourceName);
+
+addStation(
+        sourceName,
+        generatedCode,
+        p.x,
+        p.y
+);
                 }
             }
 
@@ -139,8 +191,19 @@ public class TrainPath {
                         try {
                             double distance = Double.parseDouble(weightStr);
                             if (findStationByName(destName) == null) {
-                                String destCode = destName.substring(0, Math.min(destName.length(), 3)).toUpperCase();
-                                addStation(destName, destCode);
+                               String destCode =
+        destName.substring(0,
+        Math.min(destName.length(), 3))
+        .toUpperCase();
+
+Point p = getProvinceLocation(destName);
+
+addStation(
+        destName,
+        destCode,
+        p.x,
+        p.y
+);
                             }
 
                             addPath(sourceName, destName, distance);

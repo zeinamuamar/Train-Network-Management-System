@@ -71,7 +71,7 @@ public class MainDashboard extends JFrame {
         title.setBounds(40, 30, 200, 30);
         left.add(title);
 
-        // 🎯 buttons
+        // buttons
         JButton addStation = createButton("Add Station", 100);
         JButton addRoute = createButton("Add Route", 150);
         JButton shortestPath = createButton("Shortest Path", 200);
