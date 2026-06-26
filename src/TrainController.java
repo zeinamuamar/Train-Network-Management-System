@@ -165,4 +165,34 @@ public List<Station> getShortestPath(String from, String to) {
     public void clearNetwork() {
           backendGraph.getNetwork().clear();
     }
+    
+    // ===============================================
+    // 9. A method to render the train network from file to enother
+    public String renderNetworkToFile(String inputPath, String outputPath) {
+        if (inputPath == null || inputPath.trim().isEmpty() || 
+        outputPath == null || outputPath.trim().isEmpty()) {
+        return "⚠️ Error!";
+    }
+
+    try {
+        backendGraph.importNetwork(inputPath);
+
+
+        if (backendGraph.getNetwork().isEmpty()) { 
+            return "⚠️ Error! there is no data in the input file to render the network.";
+        }
+
+        backendGraph.renderNetworkToFile(inputPath, outputPath);
+
+        return "✅ Network rendered successfully to " + outputPath;
+
+    } catch (IllegalArgumentException e) {
+    
+        return "❌ Error rendering network: " + e.getMessage();
+    } catch (Exception e) {
+        
+        return "❌ Error occurred while processing files: " + e.getMessage();
+    }
+}
+    
 }
