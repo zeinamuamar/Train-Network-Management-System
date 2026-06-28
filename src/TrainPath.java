@@ -1,7 +1,9 @@
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -227,58 +229,54 @@ addStation(
     }
 
     //======= 3 =======
-    public void renderNetworkToFile(String inputPath, String outputPath) {
-        importNetwork(inputPath);
+   public void renderNetworkToFile(String inputPath, String outputPath) {
+    importNetwork(inputPath);
 
-        if (Network.isEmpty()) {
-           throw new IllegalArgumentException("Warning: The grid is empty, there is nothing to draw");
-        }
-
-        try (FileWriter fileWriter = new FileWriter(outputPath);
-             PrintWriter printWriter = new PrintWriter(fileWriter)) {
-
-            printWriter.println("=========================================================");
-            printWriter.println("                    (Graph Render)                       ");
-            printWriter.println("=========================================================");
-            printWriter.println();
-
-            for (Map.Entry<Station, List<Path>> entry : Network.entrySet()) {
-                Station currentStation = entry.getKey();
-                List<Path> paths = entry.getValue();
-
-                printWriter.println(" ┌────────────────────────┐");
-                printWriter.println(" │ Station: " + String.format("%-15s", currentStation.getName()) + "│");
-                printWriter.println(" └────────────────────────┘");
-
-                if (paths.isEmpty()) {
-                        printWriter.println("       └── ⛔ no paths originate from this station");
-                    } else {
-                    
-                    for (int i = 0; i < paths.size(); i++) {
-                        Path path = paths.get(i);
-                        
-                        if (i == paths.size() - 1) {
-                            
-                            printWriter.println("       └─── 🛤️  ──(" + path.getdistance() + " km)──> [ " + path.getDestination().getName() + " ]");
-                        } else {
-                           
-                            printWriter.println("       ├─── 🛤️  ──(" + path.getdistance() + " km)──> [ " + path.getDestination().getName() + " ]");
-                        }
-                    }
-                }
-                //A blank line between the stations
-                printWriter.println(); 
-            }
-
-            printWriter.println("=========================================================");
-            printWriter.println("   The structural diagram was generated successfully      ");
-            printWriter.println("=========================================================");
-            
-        } catch (IOException e) {
-            System.err.println("Error while writing the rendered network to file: " + e.getMessage());
-        }   
+    if (Network.isEmpty()) {
+        throw new IllegalArgumentException("Warning: The grid is empty, there is nothing to draw");
     }
 
+    try (PrintWriter printWriter = new PrintWriter(
+            new OutputStreamWriter(
+                    new FileOutputStream(outputPath),
+                    java.nio.charset.StandardCharsets.UTF_8
+            ))) {
+
+        printWriter.println("=========================================================");
+        printWriter.println("                    (Graph Render)                       ");
+        printWriter.println("=========================================================");
+        printWriter.println();
+
+        for (Map.Entry<Station, List<Path>> entry : Network.entrySet()) {
+            Station currentStation = entry.getKey();
+            List<Path> paths = entry.getValue();
+
+            printWriter.println(" Station: " + currentStation.getName());
+
+            if (paths.isEmpty()) {
+                printWriter.println("   - no paths originate from this station");
+            } else {
+
+                for (int i = 0; i < paths.size(); i++) {
+                    Path path = paths.get(i);
+
+                    printWriter.println("   -> " +
+                            path.getDestination().getName() +
+                            " (" + path.getdistance() + " km)");
+                }
+            }
+
+            printWriter.println();
+        }
+
+        printWriter.println("=========================================================");
+        printWriter.println("   The structural diagram was generated successfully      ");
+        printWriter.println("=========================================================");
+
+    } catch (IOException e) {
+        System.err.println("Error while writing the rendered network: " + e.getMessage());
+    }
+}
     //======= 4 =======
     public List<Station> findShortestPath(String sourceName, String destName) {
         Station source = findStationByName(sourceName);

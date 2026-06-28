@@ -168,31 +168,40 @@ public List<Station> getShortestPath(String from, String to) {
     
     // ===============================================
     // 9. A method to render the train network from file to enother
-    public String renderNetworkToFile(String inputPath, String outputPath) {
-        if (inputPath == null || inputPath.trim().isEmpty() || 
+   public String renderNetworkToFile(String inputPath,
+                                  String outputPath) {
+
+    if (inputPath == null || inputPath.trim().isEmpty() ||
         outputPath == null || outputPath.trim().isEmpty()) {
-        return "⚠️ Error!";
+
+        return "⚠️ Invalid file paths.";
     }
 
     try {
-        backendGraph.importNetwork(inputPath);
 
+        backendGraph.renderNetworkToFile(
+                inputPath,
+                outputPath
+        );
 
-        if (backendGraph.getNetwork().isEmpty()) { 
-            return "⚠️ Error! there is no data in the input file to render the network.";
-        }
-
-        backendGraph.renderNetworkToFile(inputPath, outputPath);
-
-        return "✅ Network rendered successfully to " + outputPath;
+        return "✅ Network rendered successfully to "
+                + outputPath;
 
     } catch (IllegalArgumentException e) {
-    
-        return "❌ Error rendering network: " + e.getMessage();
+
+        return "❌ " + e.getMessage();
+
     } catch (Exception e) {
-        
-        return "❌ Error occurred while processing files: " + e.getMessage();
+
+        return "❌ Error occurred while processing files: "
+                + e.getMessage();
     }
 }
+public double calculateDistance(Station a, Station b) {
+    int dx = a.getX() - b.getX();
+    int dy = a.getY() - b.getY();
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
     
 }

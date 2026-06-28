@@ -15,7 +15,7 @@ public class MainDashboard extends JFrame {
         setSize(1000, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+        setResizable(false);
         //create backend ONCE
         controller = new TrainController();
         //initializeGovernorateStations();
@@ -111,6 +111,7 @@ public class MainDashboard extends JFrame {
         JButton importGraph = createButton("Import Graph", 300);
         JButton exportGraph = createButton("Export Graph", 350);
         JButton sortStations = createButton("Sort Stations", 400);
+        JButton renderFile = createButton("Render File",450);
      importGraph.addActionListener(e -> {
 
     JFileChooser chooser = new JFileChooser();
@@ -133,6 +134,43 @@ public class MainDashboard extends JFrame {
 
         mapPanel.repaint();
     }
+});
+    renderFile.addActionListener(e -> {
+
+    JFileChooser inputChooser =
+            new JFileChooser();
+
+    if (inputChooser.showOpenDialog(this)
+            != JFileChooser.APPROVE_OPTION) {
+        return;
+    }
+
+    String inputPath =
+            inputChooser.getSelectedFile()
+                    .getAbsolutePath();
+
+    JFileChooser outputChooser =
+            new JFileChooser();
+
+    if (outputChooser.showSaveDialog(this)
+            != JFileChooser.APPROVE_OPTION) {
+        return;
+    }
+
+    String outputPath =
+            outputChooser.getSelectedFile()
+                    .getAbsolutePath();
+
+    String result =
+            controller.renderNetworkToFile(
+                    inputPath,
+                    outputPath
+            );
+
+    JOptionPane.showMessageDialog(
+            this,
+            result
+    );
 });
         exportGraph.addActionListener(e -> {
 
@@ -275,12 +313,33 @@ public class MainDashboard extends JFrame {
             return;
         }
 
-        boolean success =
-                controller.addPathFromUI(
-                        source,
-                        destination,
-                        1
-                );
+Station sourceStation = controller.getNetwork().keySet().stream()
+        .filter(s -> s.getName().equals(source))
+        .findFirst()
+        .orElse(null);
+
+Station destinationStation = controller.getNetwork().keySet().stream()
+        .filter(s -> s.getName().equals(destination))
+        .findFirst()
+        .orElse(null);
+double distance =
+        Math.round(
+                controller.calculateDistance(
+                        sourceStation,
+                        destinationStation
+                ) * 10
+        ) / 10.0;
+if (sourceStation == null || destinationStation == null) {
+    JOptionPane.showMessageDialog(this, "Station not found!");
+    return;
+}
+
+boolean success =
+        controller.addPathFromUI(
+                source,
+                destination,
+                distance
+        );
 
         if (success) {
 
@@ -357,6 +416,7 @@ shortestPath.addActionListener(e -> {
         left.add(importGraph);
         left.add(exportGraph);
         left.add(sortStations);
+        left.add(renderFile);
         return left;
     }
 

@@ -9,7 +9,7 @@ public class SplashScreen extends JFrame {
         setSize(1000, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-     
+        setResizable(false);
         add(new SplashPanel());
         setVisible(true);
         setAlwaysOnTop(true);
